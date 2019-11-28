@@ -1,7 +1,7 @@
 import psycopg2.extras
 import psycopg2 as pg
 
-def connectToDb():
+def connectDb():
     try:
         return pg.connect(
             database='pylotar',
