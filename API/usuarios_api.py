@@ -4,16 +4,16 @@ from connect_db import connectDb
 import psycopg2
 from collections import OrderedDict
 
-carros_api = Blueprint('carros_api', 'carros_api', url_prefix="/api/carros")
+usuarios_api = Blueprint('usuarios_api', 'usuarios_api', url_prefix="/api/usuarios")
 
-@carros_api.route('/', methods=['GET', 'POST', 'PUT'])
+@usuarios_api.route('/', methods=['GET', 'POST', 'PUT'])
 def api_verbs():
     if request.method == 'GET':
         con = connectDb()
         cur = con.cursor(cursor_factory=RealDictCursor)
 
         try:
-            cur.execute('select * from tb_carros')
+            cur.execute('select * from tb_usuarios')
             result = cur.fetchall()
             cur.close()
         except (Exception, psycopg2.DatabaseError) as error:
@@ -23,7 +23,7 @@ def api_verbs():
                 con.close()
 
         if(result == None):
-            return 'Nenhum carro encontrado'
+            return 'Nenhum usuário encontrado'
 
         return jsonify(result)
 
@@ -35,19 +35,20 @@ def api_verbs():
 
         try:
             cur.execute('''
-                        insert into tb_carros ( marca, modelo, ano, cor, valor)
-                        values (%s, %s, %s, %s, %s);
+                        insert into tb_usuarios ( nome, sobrenome, telefone, cpf, email, senha)
+                        values (%s, %s, %s, %s, %s, %s);
                         ''',
-                        (dados['marca'],
-                        dados['modelo'],
-                        dados['ano'],
-                        dados['cor'],
-                        dados['valor']))
+                        (dados['nome'],
+                        dados['sobrenome'],
+                        dados['telefone'],
+                        dados['cpf'],
+                        dados['email'],
+                        dados['senha']))
             con.commit()
             cur.execute('''
-                        select * from tb_carros where id = (select max(id) from tb_carros); 
+                        select * from tb_usuarios where id = (select max(id) from tb_usuarios); 
                         ''')
-            result = cur.fetchall()
+            result = cur.fetchone()
             cur.close()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
@@ -64,25 +65,27 @@ def api_verbs():
         cur = con.cursor()
 
         try:
-            result = get_carros_by_id(dados['id'])
+            dados['id'] = str(dados['id'])
+            result = get_usuarios_by_id(dados['id'])
 
-            if(result == None):
+            if(result == None or type(result) == str):
                 con.close()
                 return 'ERRO PUT\nCarro com id ' + dados['id'] + ' não encontrado'
             
             cur.execute('''
-                        update tb_carros
-                        set marca = %s, modelo = %s, ano = %s, cor = %s, valor = %s
+                        update tb_usuarios
+                        set nome = %s, sobrenome = %s, telefone = %s, cpf = %s, email = %s, senha = %s
                         where id = %s
                         ''',
-                        (dados['marca'],
-                         dados['modelo'],
-                         dados['ano'],
-                         dados['cor'],
-                         dados['valor'],
+                        (dados['nome'],
+                         dados['sobrenome'],
+                         dados['telefone'],
+                         dados['cpf'],
+                         dados['email'],
+                         dados['senha'],
                          dados['id']))
             con.commit()  
-            result = get_carros_by_id(dados['id'])          
+            result = get_usuarios_by_id(dados['id'])          
             cur.close()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
@@ -92,18 +95,18 @@ def api_verbs():
 
         return result
 
-@carros_api.route('/<string:id>', methods=['GET'])
-def get_carros_by_id(id):
+@usuarios_api.route('/<string:id>', methods=['GET'])
+def get_usuarios_by_id(id):
     con = connectDb()
     cur = con.cursor(cursor_factory=RealDictCursor)
 
     try:
-        cur.execute('''select * from tb_carros where id = %s''', (id,))
-        result = cur.fetchall()
+        cur.execute('''select * from tb_usuarios where id = %s''', (id,))
+        result = cur.fetchone()
         cur.close()
 
         if(result == None):
-            return 'ERRO GET\nCarro com id ' + id + ' não encontrado'
+            return 'ERRO GET\nUsuario com id ' + id + ' não encontrado'
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -113,7 +116,7 @@ def get_carros_by_id(id):
 
     return jsonify(result)
 
-@carros_api.route('/<string:id>', methods=['PUT'])
+@usuarios_api.route('/<string:id>', methods=['PUT'])
 def put(id):
     dados = request.json
 
@@ -121,25 +124,26 @@ def put(id):
     cur = con.cursor()
 
     try:
-        result = get_carros_by_id(id)
+        result = get_usuarios_by_id(id)
 
-        if(result == None):
+        if(result == None or type(result) == str):
             con.close()
             return 'ERRO PUT\nCarro com id ' + id + ' não encontrado'
 
         cur.execute('''
-                    update tb_carros
-                    set marca = %s, modelo = %s, ano = %s, cor = %s, valor = %s
-                    where id = %s
-                    ''',
-                    (dados['marca'],
-                    dados['modelo'],
-                    dados['ano'],
-                    dados['cor'],
-                    dados['valor'],
-                    id))
+                        update tb_usuarios
+                        set nome = %s, sobrenome = %s, telefone = %s, cpf = %s, email = %s, senha = %s
+                        where id = %s
+                        ''',
+                        (dados['nome'],
+                         dados['sobrenome'],
+                         dados['telefone'],
+                         dados['cpf'],
+                         dados['email'],
+                         dados['senha'],
+                         id))
         con.commit()
-        result = get_carros_by_id(id)
+        result = get_usuarios_by_id(id)
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -149,19 +153,20 @@ def put(id):
 
     return result
 
-@carros_api.route('/<string:id>', methods=['DELETE'])
+@usuarios_api.route('/<string:id>', methods=['DELETE'])
 def delete(id):
     con = connectDb()
     cur = con.cursor()
 
-    try:        
-        result = get_carros_by_id(id)
+    try:      
 
-        if(result == None):
+        result = get_usuarios_by_id(id)
+
+        if(result == None or type(result) == str):
             con.close()
-            return 'ERRO DELETE\nCarro com id ' + id + ' não encontrado'
+            return 'ERRO DELETE\nUsuário com id ' + id + ' não encontrado'
         
-        cur.execute('''delete from tb_carros where id = %s ''', (id,))
+        cur.execute('''delete from tb_usuarios where id = %s ''', (id,))
         con.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -170,4 +175,4 @@ def delete(id):
         if con is not None:
             con.close()
 
-    return "Carro " + id + " deletado com sucesso"
+    return "Usuário " + id + " deletado com sucesso"
