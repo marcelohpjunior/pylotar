@@ -113,6 +113,48 @@ def get_carros_by_id(id):
 
     return jsonify(result)
 
+@carros_api.route('/<string:marca>', methods=['GET'])
+def get_carros_by_marca(marca):
+    con = connectDb()
+    cur = con.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute('''select * from tb_carros where marca = %s''', (marca,))
+        result = cur.fetchall()
+        cur.close()
+
+        if(result == None):
+            return 'ERRO GET\nCarro da marca ' + id + ' não encontrado'
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if con is not None:
+            con.close()
+
+    return jsonify(result)   
+
+@carros_api.route('/<string:ano>', methods=['GET'])
+def get_carros_by_ano(ano):
+    con = connectDb()
+    cur = con.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cur.execute('''select * from tb_carros where ano = %s''', (ano,))
+        result = cur.fetchall()
+        cur.close()
+
+        if(result == None):
+            return 'ERRO GET\nCarro com o ano ' + ano + ' não encontrado'
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if con is not None:
+            con.close()
+
+    return jsonify(result)
+
 @carros_api.route('/<string:id>', methods=['PUT'])
 def put(id):
     dados = request.json

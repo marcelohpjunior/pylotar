@@ -176,3 +176,36 @@ def delete(id):
             con.close()
 
     return "Usuário " + id + " deletado com sucesso"
+
+#<string:email>&<string:senha>
+@usuarios_api.route('/login', methods=['GET','POST'])
+def login():
+    con = connectDb()
+    cur = con.cursor(cursor_factory=RealDictCursor)
+    result = ''
+    
+    if request.method == 'GET':
+        email = request.args.get('email')
+        senha= request.args.get('senha')
+    else:
+        email = request.json['email']
+        senha = request.json['senha']
+
+    try:      
+        cur.execute('''select * from tb_usuarios where email = %s and senha = %s ''', (email,senha,))
+        result = cur.fetchall()
+      
+
+        if(result == None or type(result) == str):
+            con.close()
+            return 'ERRO LOGIN\nLogin invalido'
+        
+
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if con is not None:
+            con.close()
+
+    return jsonify(result)
