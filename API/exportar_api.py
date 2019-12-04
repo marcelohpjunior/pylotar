@@ -29,19 +29,19 @@ def api_exportar():
     return 'Arquivos exportados com sucesso'
 
 def exportarJson(fileNome, dados):
-    if(not os.path.exists('dados_json')):
-        os.makedirs('dados_json')
+    if(not os.path.exists('c:\\dados_json')):
+        os.makedirs('c:\\dados_json')
 
-    file = open('dados_json/'+fileNome + ".json", "w")
+    file = open('c:\\dados_json/'+fileNome + ".json", "w")
     json.dump(dados, file, indent=4)
     file.close()
 
 def ziparArquivos():
-    if(not os.path.exists('dados_exportados')):
-        os.makedirs('dados_exportados')
+    if(not os.path.exists('c:\\dados_exportados')):
+        os.makedirs('c:\\dados_exportados')
 
-    path_zip = os.path.join(os.sep, os.getcwd(), "dados_exportados/dados.zip")
-    path_dir = os.path.join(os.sep, os.getcwd(), "dados_json")
+    path_zip = os.path.join(os.sep, 'c:\\', "dados_exportados/dados.zip")
+    path_dir = os.path.join(os.sep, 'c:\\', "dados_json")
 
     zf = zip.ZipFile(path_zip,"w")
     for dirname, subdirs, files in os.walk(path_dir):
